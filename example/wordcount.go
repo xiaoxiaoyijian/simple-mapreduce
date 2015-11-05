@@ -3,10 +3,16 @@ package main
 import (
 	"github.com/xiaoxiaoyijian/simple-mapreduce/core"
 	"github.com/xiaoxiaoyijian/simple-mapreduce/utils/file"
+	"math/rand"
+	"runtime"
 	"strings"
+	"time"
 )
 
 func main() {
+	runtime.GOMAXPROCS(runtime.NumCPU())
+	rand.Seed(int64(time.Second))
+
 	job := core.NewJob(dirMapper, wordReducer)
 	result := job.Run(file.ReadDir("./", ""))
 	core.PrintMap(result)
