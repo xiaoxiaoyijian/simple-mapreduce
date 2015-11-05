@@ -16,8 +16,8 @@ func NewJob(m Mapper, r Reducer) *Job {
 	return &Job{
 		mapper:         m,
 		reducer:        r,
-		MapperChanLen:  10,
-		UnitsPerMapper: 10,
+		MapperChanLen:  100,
+		UnitsPerMapper: 100,
 	}
 }
 
@@ -63,11 +63,6 @@ func (this *Job) Map(in_chan chan interface{}) chan map[interface{}]interface{} 
 	return out_chan
 }
 
-func (this *Job) Reduce(in_chan chan map[interface{}]interface{}) map[interface{}]interface{} {
-	mapResult := []map[interface{}]interface{}{}
-	for v := range in_chan {
-		mapResult = append(mapResult, v)
-	}
-
-	return Reduce(Aggregate(mapResult), this.reducer)
+func (this *Job) Reduce(in chan map[interface{}]interface{}) map[interface{}]interface{} {
+	return Reduce(Aggregate(in), this.reducer)
 }

@@ -17,20 +17,20 @@ type Reducer func(key interface{}, values []interface{}) map[interface{}]interfa
 /**
  * aggregate: (k1,v1);(k1,v2);(k2,v3).... → k1,[v1,v2];k2,[v3];....
  */
-func Aggregate(values []map[interface{}]interface{}) map[interface{}][]interface{} {
-	result := make(map[interface{}][]interface{})
-	for _, value := range values {
+func Aggregate(in_chan chan map[interface{}]interface{}) map[interface{}][]interface{} {
+	ret := make(map[interface{}][]interface{})
+	for value := range in_chan {
 		for k, v := range value {
-			_, ok := result[k]
+			_, ok := ret[k]
 			if ok {
-				result[k] = append(result[k], v)
+				ret[k] = append(ret[k], v)
 			} else {
-				result[k] = []interface{}{v}
+				ret[k] = []interface{}{v}
 			}
 		}
 	}
 
-	return result
+	return ret
 }
 
 func Reduce(in map[interface{}][]interface{}, reducer Reducer) map[interface{}]interface{} {

@@ -6,6 +6,7 @@ import (
 	"math/rand"
 	"runtime"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -26,14 +27,27 @@ func dirMapper(key interface{}, value interface{}) map[interface{}]interface{} {
 		return ret
 	}
 
-	job := core.NewJob(lineMapper, wordReducer)
-	jobResults := []map[interface{}]interface{}{}
-	for _, v := range files {
-		filename := strings.TrimSpace(v.(string))
-		jobResults = append(jobResults, job.Run(file.ReadLines(filename)))
-	}
+	runFileChan := make(chan map[interface{}]interface{}, 100)
+	go func() {
+		defer close(runFileChan)
 
-	return core.Reduce(core.Aggregate(jobResults), wordReducer)
+		var wg sync.WaitGroup
+		job := core.NewJob(lineMapper, wordReducer)
+
+		for _, v := range files {
+			filename := strings.TrimSpace(v.(string))
+
+			wg.Add(1)
+			go func(myfile string) {
+				defer wg.Done()
+
+				runFileChan <- job.Run(file.ReadLines(myfile))
+			}(filename)
+		}
+		wg.Wait()
+	}()
+
+	return core.Reduce(core.Aggregate(runFileChan), wordReducer)
 }
 
 func lineMapper(key interface{}, value interface{}) map[interface{}]interface{} {

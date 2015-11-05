@@ -1,4 +1,4 @@
-Simple Map/Reduce Framework written by GO language
+Simple Map/Reduce Framework written by GO programming language
 
 参考：
 MapReduce中的Map和Reduce操作的抽象描述
